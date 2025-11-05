@@ -1,0 +1,11 @@
+:root{--gap:12px}
+body{font-family:Inter, system-ui, Arial, sans-serif; margin:20px}
+.container{max-width:1000px;margin:0 auto}
+.form{display:flex;flex-direction:column;gap:12px}
+.fileLabel input{display:block;margin-top:6px}
+.controls{display:flex;gap:12px;align-items:center}
+.preview{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px}
+.card{border:1px solid #ddd;padding:8px;width:240px}
+.card img{max-width:100%;height:auto;display:block}
+.meta{font-size:13px;margin-top:6px}
+.status{margin-top:8px;color:#333}
