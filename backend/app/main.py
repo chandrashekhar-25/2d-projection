@@ -21,26 +21,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 @app.post("/process-video")
 async def process_video(file: UploadFile = File(...), interval_seconds: float = 1.0, max_frames: int = 20):
-    """Accepts a video file, extracts frames, labels each frame, and returns JSON.
-
-    Returns:
-    {
-      "video_filename": "...",
-      "frames": [ {"filename": "...", "data": "data:image...", "label": {...}}, ... ]
-    }
-    """
+    """Accepts a video file, extracts frames, labels each frame, and returns JSON."""
     if not file.filename:
         raise HTTPException(status_code=400, detail="No file uploaded")
 
-    # create temp working dir
     work_dir = tempfile.mkdtemp(prefix="2dproj_")
     try:
         video_path = os.path.join(work_dir, f"upload_{uuid.uuid4().hex}_{file.filename}")
         content = await file.read()
-        # write file asynchronously
         async with aiofiles.open(video_path, "wb") as f:
             await f.write(content)
 
@@ -63,8 +53,6 @@ async def process_video(file: UploadFile = File(...), interval_seconds: float = 
             "count": len(response_frames),
         })
     finally:
-        # keep the uploaded file and frames while debugging? remove for cleanup
-        # remove temp working directory to avoid disk accumulation
         try:
             shutil.rmtree(work_dir)
         except Exception:

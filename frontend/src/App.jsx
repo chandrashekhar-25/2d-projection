@@ -4,7 +4,7 @@ export default function App() {
   const [file, setFile] = useState(null);
   const [interval, setIntervalVal] = useState(1.0);
   const [maxFrames, setMaxFrames] = useState(10);
-  const [status, setStatus] = useState("idle");
+  const [status, setStatus] = useState("");
   const [frames, setFrames] = useState([]);
 
   async function handleSubmit(e) {
@@ -34,126 +34,81 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center py-10 px-4">
-      <div className="max-w-3xl w-full bg-white rounded-2xl shadow-lg p-8">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-          🎥 2D Projection — Upload a Video
-        </h1>
+    <div className="container">
+      <h1>2D Projection — Upload a Video</h1>
+      <form onSubmit={handleSubmit} className="form">
+        <label className="fileLabel">
+          Video file
+          <input
+            type="file"
+            accept="video/*"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          />
+        </label>
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-6 border border-gray-200 rounded-xl p-6"
-        >
-          {/* File Upload */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Video File
-            </label>
+        <div className="controls">
+          <label>
+            Interval (s)
             <input
-              type="file"
-              accept="video/*"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              type="number"
+              min="0.1"
+              step="0.1"
+              value={interval}
+              onChange={(e) => setIntervalVal(parseFloat(e.target.value) || 1)}
             />
-            {file && (
-              <p className="text-sm text-gray-500 mt-2">{file.name}</p>
-            )}
-          </div>
-
-          {/* Interval + Max Frames */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Interval (seconds)
-              </label>
-              <input
-                type="number"
-                min="0.1"
-                step="0.1"
-                value={interval}
-                onChange={(e) =>
-                  setIntervalVal(parseFloat(e.target.value) || 1)
-                }
-                className="w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Max Frames
-              </label>
-              <input
-                type="number"
-                min="1"
-                value={maxFrames}
-                onChange={(e) =>
-                  setMaxFrames(parseInt(e.target.value) || 1)
-                }
-                className="w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-          </div>
-
-          {/* Submit Button */}
-          <div className="flex justify-center">
-            <button
-              type="submit"
-              className="bg-indigo-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-indigo-700 transition-all duration-200 shadow-md"
-            >
-              Upload & Process
-            </button>
-          </div>
-        </form>
-
-        {/* Status */}
-        <div className="mt-6 text-center text-sm text-gray-700">
-          {status !== "idle" && (
-            <div
-              className={`inline-block px-4 py-2 rounded-lg ${
-                status.startsWith("Error")
-                  ? "bg-red-100 text-red-700"
-                  : "bg-green-100 text-green-700"
-              }`}
-            >
-              {status}
-            </div>
-          )}
+          </label>
+          <label>
+            Max frames
+            <input
+              type="number"
+              min="1"
+              value={maxFrames}
+              onChange={(e) => setMaxFrames(parseInt(e.target.value) || 1)}
+            />
+          </label>
         </div>
 
-        {/* Results */}
-        {frames.length > 0 && (
-          <div className="mt-8">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              Extracted Frames
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {frames.map((f) => (
-                <div
-                  key={f.filename}
-                  className="rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow border border-gray-200"
-                >
-                  <img
-                    src={f.data}
-                    alt={f.filename}
-                    className="w-full h-40 object-cover"
-                  />
-                  <div className="p-3 text-sm">
-                    <strong className="block text-gray-800">
-                      {f.filename}
-                    </strong>
-                    <p className="text-gray-600">
-                      label: {f.label.label} (conf={f.label.confidence})
-                    </p>
-                    <p className="text-gray-600">
-                      brightness: {f.label.brightness}
-                    </p>
+        <div>
+          <button type="submit">Upload & Process</button>
+        </div>
+      </form>
+
+      <div className="status">{status}</div>
+
+      {frames.length > 0 && (
+        <>
+          <h2>Result</h2>
+          <div className="preview">
+            {frames.map((f) => (
+              <div className="card" key={f.filename}>
+                <img src={f.data} alt={f.filename} />
+                <div className="meta">
+                  <strong>{f.filename}</strong>
+                  <div>
+                    <b>Detected objects:</b>
+                    {f.label.objects.length
+                      ? f.label.objects.map((obj, i) => (
+                          <div key={i} style={{marginBottom: 4, marginLeft: 6}}>
+                            type: {obj.type} <br />
+                            bbox: [{obj.bbox.map(v => v.toFixed(1)).join(', ')}] <br />
+                            confidence: {obj.confidence.toFixed(3)}
+                          </div>
+                        ))
+                      : <span> None</span>
+                    }
+                  </div>
+                  <div>
+                    brightness: {f.label.meta.brightness}
+                  </div>
+                  <div>
+                    mean color: [{f.label.meta.mean_color.join(', ')}]
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }

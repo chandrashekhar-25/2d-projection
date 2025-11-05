@@ -4,7 +4,6 @@ from PIL import Image
 import io
 import base64
 
-
 def extract_frames(video_path: str, out_dir: str, interval_seconds: float = 1.0, max_frames: int = 20):
     """Extract frames from video every `interval_seconds` seconds up to `max_frames`.
     Saves JPEG files into out_dir and returns list of file paths.
@@ -16,7 +15,6 @@ def extract_frames(video_path: str, out_dir: str, interval_seconds: float = 1.0,
 
     fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
     frame_interval = max(1, int(round(fps * interval_seconds)))
-
     saved = []
     frame_idx = 0
     saved_count = 0
@@ -26,15 +24,12 @@ def extract_frames(video_path: str, out_dir: str, interval_seconds: float = 1.0,
             break
         if frame_idx % frame_interval == 0:
             out_path = os.path.join(out_dir, f"frame_{saved_count:04d}.jpg")
-            # encode as JPEG
             cv2.imwrite(out_path, frame)
             saved.append(out_path)
             saved_count += 1
         frame_idx += 1
-
     cap.release()
     return saved
-
 
 def encode_image_base64(path: str, resize_to: tuple | None = (640, 360)) -> str:
     img = Image.open(path).convert("RGB")
