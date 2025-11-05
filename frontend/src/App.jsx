@@ -81,27 +81,49 @@ export default function App() {
           <div className="preview">
             {frames.map((f) => (
               <div className="card" key={f.filename}>
-                <img src={f.data} alt={f.filename} />
+                <img src={f.data} alt={f.filename} style={{width:'100%',maxWidth:350}} />
                 <div className="meta">
                   <strong>{f.filename}</strong>
+                  
                   <div>
                     <b>Detected objects:</b>
-                    {f.label.objects.length
-                      ? f.label.objects.map((obj, i) => (
-                          <div key={i} style={{marginBottom: 4, marginLeft: 6}}>
-                            type: {obj.type} <br />
-                            bbox: [{obj.bbox.map(v => v.toFixed(1)).join(', ')}] <br />
-                            confidence: {obj.confidence.toFixed(3)}
+                    {f.label.objects.length ? (
+                      <div style={{display:'flex',flexWrap:'wrap',gap:'10px',marginTop:'5px'}}>
+                        {f.label.objects.map((obj, i) => (
+                          <div key={i} className="object-card"
+                               style={{
+                                 border: '1px solid #ddd',
+                                 borderRadius: '6px',
+                                 padding: '8px',
+                                 background: '#f9f9fa',
+                                 minWidth: 140,
+                                 boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
+                               }}>
+                            <div><b>{obj.type}</b></div>
+                            <div>
+                              <small>Box:</small> <span>[{obj.bbox.map(v => v.toFixed(1)).join(', ')}]</span>
+                            </div>
+                            <div>
+                              <small>Confidence:</small> {obj.confidence?.toFixed(3)}
+                            </div>
+                            {obj.attributes && (
+                              <div style={{marginTop:'5px'}}>
+                                {Object.entries(obj.attributes).map(([k,v]) => (
+                                  <span key={k} style={{marginRight:8}}>
+                                    <small>{k}:</small> <span>{String(v)}</span>
+                                  </span>
+                                ))}
+                              </div>
+                            )}
                           </div>
-                        ))
-                      : <span> None</span>
-                    }
+                        ))}
+                      </div>
+                    ) : <span> None</span>}
                   </div>
-                  <div>
-                    brightness: {f.label.meta.brightness}
-                  </div>
-                  <div>
-                    mean color: [{f.label.meta.mean_color.join(', ')}]
+                  <div style={{marginTop:"5px"}}>
+                    <b>Meta:</b>
+                    <div>brightness: {f.label.meta.brightness}</div>
+                    <div>mean color: [{f.label.meta.mean_color.join(', ')}]</div>
                   </div>
                 </div>
               </div>
@@ -109,6 +131,19 @@ export default function App() {
           </div>
         </>
       )}
+      {/* Add minimal CSS for demonstration */}
+      <style>{"\
+        .container { max-width:900px; margin:auto; font-family:sans-serif; padding:16px; }\
+        .preview { display:flex; flex-wrap:wrap; gap:20px; margin-top:15px;}\
+        .card { background:#fff; border:1px solid #dedede; border-radius:8px; \
+          padding:14px;margin-bottom:15px; box-shadow:0 3px 16px rgba(0,0,0,0.08); width:380px;}\
+        .meta { margin-top:10px; font-size:14px;}\
+        .form { margin-bottom:24px; }\
+        .controls { margin-bottom:14px; display:flex; gap:28px; }\
+        .fileLabel { margin-right:10px; }\
+        .status { margin:10px 0; color:#444; }\
+        .object-card { margin-top:2px; }\
+      "}</style>
     </div>
   );
 }
